@@ -77,9 +77,10 @@ def get_all_links(max_pages):
 
 def create_file_param(type_str):
     filename = f'Morizon_{type_str}{datetime.now().strftime("%d-%m-%Y_%H_%M")}'
-    current_dir = os.getcwd()
-    file_path = f'data/{type_str}/{filename}'
-    full_path = os.path.join(current_dir, file_path)
+    current_dir = os.getcwd().replace("\\", "/") 
+    print(current_dir)
+    file_path = os.path.join('data', type_str, filename)  
+    full_path = os.path.abspath(file_path) 
     return filename, full_path
 
 def run_crawler():
