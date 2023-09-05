@@ -44,7 +44,7 @@ def unpack_property_details(details, separator="\n"):
     offer_number = splitted_list[29]
     no_views = splitted_list[31]
     no_conquest = splitted_list[33]                                                                   
-    return property_type, standard, total_area, height, level, no_levels, kitchen_type, market_type, ownership_form, bulding_type, material, year, heating, date_added, update, offer_number, no_views, no_conquest
+    return splitted_list, property_type, standard, total_area, height, level, no_levels, kitchen_type, market_type, ownership_form, bulding_type, material, year, heating, date_added, update, offer_number, no_views, no_conquest
 
 def clean_text(text):
     cleaned_text = text.replace("\n", " ") 
@@ -85,6 +85,7 @@ def main():
                     pop_button = driver.find_element(By.CSS_SELECTOR, 'button.cmp-button_button:nth-child(2)')
                     pop_button.click()
                 except NoSuchElementException:
+                    print('@ NoSuchElementException - pop button')
                     pass
 
                 button = driver.find_element(By.CSS_SELECTOR, f"#mzn{id} > div > div:nth-child(3) > div > div > div.basic-info > div.basic-info__description-container > div > div.button__wrapper > button")
@@ -98,9 +99,11 @@ def main():
                 row_price_m2 = driver.find_element(By.CSS_SELECTOR, "#basic-info-price-row > div > span.price-row__price-m2").text
                 main_location = driver.find_element(By.CSS_SELECTOR, "span.main-location").text
                 detailed_information = driver.find_element(By.CSS_SELECTOR, f"#mzn{id} > div > div:nth-child(3) > div > div > div:nth-child(3) > div").text
-                facilities = driver.find_element(By.CSS_SELECTOR, f"#mzn{id} > div > div:nth-child(3) > div > div > div:nth-child(4) > ul > li").text
-                media = driver.find_element(By.CSS_SELECTOR, f"#mzn{id} > div > div:nth-child(3) > div > div > div:nth-child(5) > ul > li").text
-
+                #ich prawdopodobnie nie ma we wszystkich ofertach
+                #facilities = driver.find_element(By.CSS_SELECTOR, f"#mzn{id} > div > div:nth-child(3) > div > div > div:nth-child(4) > ul > li").text
+                #media = driver.find_element(By.CSS_SELECTOR, f"#mzn{id} > div > div:nth-child(3) > div > div > div:nth-child(5) > ul > li").text
+                
+                """
                 property_type, standard, total_area, height, level, no_levels, kitchen_type, market_type, ownership_form, bulding_type, material, year, heating, date_added, update, offer_number, no_views, no_conquest = unpack_property_details(detailed_information)
 
                 property_details = {
@@ -132,26 +135,29 @@ def main():
                 }
 
                 property_details_list.append(property_details)
-
+                """
+                property_details_simpl = {
+                    'id': id,
+                    'row_price': row_price,
+                    'row_price_m2': row_price_m2,
+                    'main_location': main_location,
+                    'detailed_information':detailed_information,
+                    'description':description
+                }
                 print(f'Offer {id} added to base, it was #{added_number}')
                 added_number += 1
 
                 if index % 10 == 0:
                     with open(f'{base_filename}.json', 'w', encoding='utf-8') as json_file:
-                        json.dump(property_details_list, json_file, ensure_ascii=False)
-
-            except NoSuchElementException:
-                error_number += 1
-                print(f'Error number: {error_number} Offer id: {id}')
+                        json.dump(property_details_simpl, json_file, ensure_ascii=False)
             except TimeoutException:
                 print(f'Timeout error for offer id: {id}')
             
             except Exception as exc:
-                print(exc)
                 print(f'@@@@@ {exc} in {id}')
             finally:
                 with open(f'{base_filename}.json', 'w', encoding='utf-8') as json_file:
-                    json.dump(property_details_list, json_file, ensure_ascii=False)
+                    json.dump(property_details_simpl, json_file, ensure_ascii=False)
         driver.quit()
 
 if __name__ == "__main__":
