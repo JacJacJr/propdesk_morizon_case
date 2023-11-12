@@ -12,6 +12,7 @@ Thumbs.db
 ###########################
 *.log
 *.csv
+*.json
 
 # other files or folders #
 ###############
