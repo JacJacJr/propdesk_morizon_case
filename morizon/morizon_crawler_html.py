@@ -99,7 +99,7 @@ def run_crawler():
         #todo: add this file version to dictionary data/links
         filename = f'Morizon_links:{datetime.now().strftime("%d%m%Y__%H_%M")}'
         # Save all the links to a CSV file
-        with open(f'{filename}.csv', "w", newline="", encoding="utf-8") as csv_file:
+        with open(f'data/links/{filename}.csv', "w", newline="", encoding="utf-8") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["Links"])
             writer.writerows([[link] for link in all_links])

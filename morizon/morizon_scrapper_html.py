@@ -179,13 +179,13 @@ try:
         filename = f'Morizon_data:{datetime.now().strftime("%d%m%Y_%H")}'
         #save to json
         #todo: add this file version to dictionary data/scrapped
-        with open(f'{filename}.json', 'a', encoding='utf-8') as jsonfile:
+        with open(f'data/scrapped/{filename}.json', 'a', encoding='utf-8') as jsonfile:
             json.dump(details_dict, jsonfile, indent=4)
             jsonfile.write(',')
         #save to csv
         all_keys = [d for d in details_dict.keys()]
         #todo: add this file version to dictionary data/scrapped
-        with open(f'{filename}.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        with open(f'data/scrapped/{filename}.csv', 'a', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=all_keys, restval="N/A")
             if csvfile.tell() == 0:
                 writer.writeheader()
