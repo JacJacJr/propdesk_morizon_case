@@ -33,16 +33,15 @@ def extract_and_save_to_dict(source, regex_pattern, phrase, details_dict):
     result = re.findall(regex_pattern, source)
     save_to_dict(details_dict, phrase, result)
 
-def set_property_flag(source, keyword, property_name, details_dict):
+def set_flag_and_save_to_dict(source, keyword, property_name, details_dict):
     if keyword in source:
         flag = 1
-        founded_variable = True
     else:
         flag = 0
-        founded_variable = False
     save_to_dict(details_dict, property_name, flag)
-    return founded_variable 
+    return flag 
 
+#todo: Add interface to choose data set and number of rows to scrapping (testing path) 
 prop_offer_links = pd.read_csv('data/test.csv')
 
 options = Options()
@@ -145,6 +144,7 @@ try:
                     description = re.findall(reg.description_d, source, re.DOTALL)
                 save_to_dict(details_dict,'description', description)
 
+                #todo: usuń save_to_doct osobno 
                 extract_and_save_to_dict(source, reg.market_type, 'market_type', details_dict)
                 extract_and_save_to_dict(source, reg.building_type, 'building_type', details_dict)
                 extract_and_save_to_dict(source, reg.no_rooms, 'no_rooms', details_dict)
@@ -155,15 +155,15 @@ try:
                 extract_and_save_to_dict(source, reg.water, 'water', details_dict)
 
                 #conditions on html source (encoded)
-                set_property_flag(source, ',"Winda",', 'elevator', details_dict)
-                set_property_flag(source, ',"Gaz",', 'gas', details_dict)
-                set_property_flag(source, '"Łazienka razem z WC","Tak"', 'bath_with_wc', details_dict)
-                set_property_flag(source, '="Prąd"', 'electricity', details_dict)
-                set_property_flag(source, 'parking_places', 'parking', details_dict)
-                set_property_flag(source, '>Piwnica<', 'basement', details_dict)
-                balcony = set_property_flag(source, '"Balkon","Tak"', 'balcony', details_dict)
-                if balcony != True:
-                    set_property_flag(source, '"Loggia","Tak"', 'balcony', details_dict)
+                set_flag_and_save_to_dict(source, ',"Winda",', 'elevator', details_dict)
+                set_flag_and_save_to_dict(source, ',"Gaz",', 'gas', details_dict)
+                set_flag_and_save_to_dict(source, '"Łazienka razem z WC","Tak"', 'bath_with_wc', details_dict)
+                set_flag_and_save_to_dict(source, '="Prąd"', 'electricity', details_dict)
+                set_flag_and_save_to_dict(source, 'parking_places', 'parking', details_dict)
+                set_flag_and_save_to_dict(source, '>Piwnica<', 'basement', details_dict)
+                balcony = set_flag_and_save_to_dict(source, '"Balkon","Tak"', 'balcony', details_dict)
+                if balcony == 0:
+                    set_flag_and_save_to_dict(source, '"Loggia","Tak"', 'balcony', details_dict)
 
                 added_number += 1
                 print(f'Progress: {added_number}/{len(prop_offer_links)}\n {offer}')
@@ -178,14 +178,12 @@ try:
         
         filename = f'Morizon_data:{datetime.now().strftime("%d%m%Y_%H")}'
         #save to json
-        #todo: add this file version to dictionary data/scrapped
-        with open(f'data/scrapped/{filename}.json', 'a', encoding='utf-8') as jsonfile:
+        with open(f'data/scrapped/json/{filename}.json', 'a', encoding='utf-8') as jsonfile:
             json.dump(details_dict, jsonfile, indent=4)
             jsonfile.write(',')
         #save to csv
         all_keys = [d for d in details_dict.keys()]
-        #todo: add this file version to dictionary data/scrapped
-        with open(f'data/scrapped/{filename}.csv', 'a', newline='', encoding='utf-8') as csvfile:
+        with open(f'data/scrapped/csv/{filename}.csv', 'a', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=all_keys, restval="N/A")
             if csvfile.tell() == 0:
                 writer.writeheader()
