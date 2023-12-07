@@ -96,8 +96,8 @@ def run_crawler():
         all_links = get_all_links(max_pages)
 
         #Generating filname with curent date and time
+        #todo: add this file version to dictionary data/links
         filename = f'Morizon_links:{datetime.now().strftime("%d%m%Y__%H_%M")}'
-        
         # Save all the links to a CSV file
         with open(f'{filename}.csv', "w", newline="", encoding="utf-8") as csv_file:
             writer = csv.writer(csv_file)

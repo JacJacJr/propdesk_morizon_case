@@ -13,15 +13,14 @@ def save_to_dict(details_dict, key, variable):
     if variable is not None and variable != '' and variable != []:
         if type(variable) is int or type(variable) is str:
             #change coma for other separator
-            #TODO change all regex as variable from regex_list
             variable = str(variable).replace(',', ' ')
-            variable = re.sub('<[^<]+?>', '', variable)
+            variable = re.sub(reg.variable_html, '', variable)
             details_dict[key] = variable    
         elif type(variable) is list:
             variable = ' '.join(variable)
             variable = variable.replace(',', ' ')
-            variable = re.sub('<[^<]+?>', '', variable)
-            variable = re.sub('\s+', ' ', variable).strip()
+            variable = re.sub(reg.variable_html, '', variable)
+            variable = re.sub(reg.variable_white, ' ', variable).strip()
             details_dict[key] = variable  
         else: 
             details_dict[key] = 'n/a'
@@ -29,6 +28,20 @@ def save_to_dict(details_dict, key, variable):
     else:
         variable = 'NULL'
         details_dict[key] = variable
+
+def extract_and_save_to_dict(source, regex_pattern, phrase, details_dict):
+    result = re.findall(regex_pattern, source)
+    save_to_dict(details_dict, phrase, result)
+
+def set_property_flag(source, keyword, property_name, details_dict):
+    if keyword in source:
+        flag = 1
+        founded_variable = True
+    else:
+        flag = 0
+        founded_variable = False
+    save_to_dict(details_dict, property_name, flag)
+    return founded_variable 
 
 prop_offer_links = pd.read_csv('data/test.csv')
 
@@ -43,7 +56,6 @@ try:
     for offer in prop_offer_links.iloc[:, 0]:
         try:
             driver.get(offer)
-
             #save whole html for processing
             source = driver.page_source
 
@@ -53,14 +65,13 @@ try:
                 continue 
             else:
                 details_dict = {}       
-
                 save_to_dict(details_dict, 'url', offer)     
 
                 #informations from url 
-                platform = re.findall(r'https://www\.([^/]+)\.pl/oferta/', offer)
+                platform = re.findall(reg.platform, offer)
                 save_to_dict(details_dict, 'platform', platform)
 
-                link_content = re.findall(r'/oferta/(.*?)$', offer)
+                link_content = re.findall(reg.link_content, offer)
 
                 link_content = link_content[0] 
                 link_parts = link_content.split('-')
@@ -114,7 +125,7 @@ try:
                 save_to_dict(details_dict,'primery_market', row_price)
                 
                 #floors
-                property_levels = re.findall(r'"Piętro","(\d+/\d+)"', source)
+                property_levels = re.findall(reg.property_levels, source)
 
                 if property_levels:
                     try:
@@ -129,81 +140,31 @@ try:
                 save_to_dict(details_dict,'total_property_level', total_property_level)
 
                 #regex without split functions
-                description = re.findall(r'<p>(.*?)</p>', source, re.DOTALL)
+                description = re.findall(reg.description_p, source, re.DOTALL)
                 if description == []:
-                    description = re.findall(r'<div>(.*?)</div>', source, re.DOTALL)
-                    print('to ten')
-                    print(offer)
-                    print(description)
+                    description = re.findall(reg.description_d, source, re.DOTALL)
                 save_to_dict(details_dict,'description', description)
 
-                market_type = re.findall(r'\\"rynek\\":\\"([aA-zZ]*)\\",', source)
-                save_to_dict(details_dict,'market_type', market_type)
-
-                building_type = re.findall(r'"Typ budynku","([aA-zZ]*)",', source)
-                save_to_dict(details_dict,'building_type', building_type)
-
-                no_rooms = re.findall(r'\\"number_of_rooms\\":([1-9]*),\\', source)
-                save_to_dict(details_dict,'no_rooms', no_rooms)
-
-                kitchen_type = re.findall(r'"Typ kuchni","([aA-zZ]*)",', source)
-                save_to_dict(details_dict,'kitchen_type', kitchen_type)
-
-                building_year = re.findall(r'"Rok budowy","(\d+)",', source)
-                save_to_dict(details_dict,'building_year', building_year)
-
-                material = re.findall(r'"Materiał budowlany","([^"]*)",', source)
-                save_to_dict(details_dict,'material', material)
-
-                heating_type = re.findall(r'"Ogrzewanie","([^"]*)",', source)
-                save_to_dict(details_dict,'heating_type', heating_type)
-
-                water = re.findall(r'"water","([^"]*)",', source)
-                save_to_dict(details_dict,'water', water)
+                extract_and_save_to_dict(source, reg.market_type, 'market_type', details_dict)
+                extract_and_save_to_dict(source, reg.building_type, 'building_type', details_dict)
+                extract_and_save_to_dict(source, reg.no_rooms, 'no_rooms', details_dict)
+                extract_and_save_to_dict(source, reg.kitchen_type, 'kitchen_type', details_dict)
+                extract_and_save_to_dict(source, reg.building_year, 'building_year', details_dict)
+                extract_and_save_to_dict(source, reg.material, 'material', details_dict)
+                extract_and_save_to_dict(source, reg.heating_type, 'heating_type', details_dict)
+                extract_and_save_to_dict(source, reg.water, 'water', details_dict)
 
                 #conditions on html source (encoded)
-                if ',"Winda",' in source:
-                    elevator = 1
-                else:
-                    elevator = 0
-                save_to_dict(details_dict,'elevator', elevator)
+                set_property_flag(source, ',"Winda",', 'elevator', details_dict)
+                set_property_flag(source, ',"Gaz",', 'gas', details_dict)
+                set_property_flag(source, '"Łazienka razem z WC","Tak"', 'bath_with_wc', details_dict)
+                set_property_flag(source, '="Prąd"', 'electricity', details_dict)
+                set_property_flag(source, 'parking_places', 'parking', details_dict)
+                set_property_flag(source, '>Piwnica<', 'basement', details_dict)
+                balcony = set_property_flag(source, '"Balkon","Tak"', 'balcony', details_dict)
+                if balcony != True:
+                    set_property_flag(source, '"Loggia","Tak"', 'balcony', details_dict)
 
-                if ',"Gaz",' in source:
-                    gas = 1
-                else:
-                    gas = 0
-                save_to_dict(details_dict,'gas', gas)
-
-                if '"Balkon","Tak"' or '"Loggia","Tak"' in source :
-                    balcony = 1
-                else:
-                    balcony = 0
-                save_to_dict(details_dict,'balcony', balcony)
-
-                if '"Łazienka razem z WC","Tak"' in source:
-                    bath_with_wc = 1
-                else:
-                    bath_with_wc = 0
-                save_to_dict(details_dict, 'bath_with_wc', bath_with_wc)
-
-                if '="Prąd"' in source:
-                    electricity = 1
-                else:
-                    electricity = 0
-                save_to_dict(details_dict,'electricity', electricity)
-
-                if 'parking_places' in source:
-                    parking = 1
-                else:
-                    parking = 0
-                save_to_dict(details_dict,'parking', parking)
-
-                if '>Piwnica<' in source:
-                    basement = 1
-                else:
-                    basement = 0
-                save_to_dict(details_dict,'basement', basement)
-                
                 added_number += 1
                 print(f'Progress: {added_number}/{len(prop_offer_links)}\n {offer}')
 
@@ -217,12 +178,13 @@ try:
         
         filename = f'Morizon_data:{datetime.now().strftime("%d%m%Y_%H")}'
         #save to json
+        #todo: add this file version to dictionary data/scrapped
         with open(f'{filename}.json', 'a', encoding='utf-8') as jsonfile:
             json.dump(details_dict, jsonfile, indent=4)
             jsonfile.write(',')
         #save to csv
         all_keys = [d for d in details_dict.keys()]
-
+        #todo: add this file version to dictionary data/scrapped
         with open(f'{filename}.csv', 'a', newline='', encoding='utf-8') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=all_keys, restval="N/A")
             if csvfile.tell() == 0:
