@@ -1,25 +1,25 @@
 # Analysis and Prediction of Real Estate Prices in Warsaw
 
 ## Project Structure
-propdesk/
-├── morizon/
-│   ├── morizon_crawler_html.py
-│   ├── morizon_scrapper_html.py
-│   ├── regex_list.py
-│   ├── find_elem_version_previous *(first approach)*
-│   │   ├── README.md *(morizon)*
-│   │   └── requirements.txt
-├── base_merge/
-│   └── data/
-│   |   └── ....
-|   ├── all_platforms_data.csv
-│   ├── base_merge.ipynb
-│   ├── analyze_housing_data.ipynb
-│   ├── machine_learning.ipynb
-|   ├── district_subdistrict_dict.py
-│   ├── README.md *(base_merge)*
-├── functional_approach *(alpha stage, not ready :)*
-└── README.md *(whole repo)*
+propdesk/  
+├── morizon/  
+│   ├── morizon_crawler_html.py  
+│   ├── morizon_scrapper_html.py  
+│   ├── regex_list.py  
+│   ├── find_elem_version_previous *(first approach)*  
+│   │   ├── README.md *(morizon)*  
+│   │   └── requirements.txt  
+├── base_merge/  
+│   └── data/  
+│   │   └── ....  
+│   ├── all_platforms_data.csv  
+│   ├── base_merge.ipynb  
+│   ├── analyze_housing_data.ipynb  
+│   ├── machine_learning.ipynb  
+│   ├── district_subdistrict_dict.py  
+│   ├── README.md *(base_merge)*  
+├── functional_approach *(alpha stage, not ready :)*  
+└── README.md *(whole repo)*  
 
 ## How It Works
 
