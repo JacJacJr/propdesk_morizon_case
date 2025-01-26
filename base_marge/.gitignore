@@ -1,0 +1,8 @@
+# Ignorowanie plików systemowych
+.DS_Store
+
+# Ignorowanie plików kompilacji Pythona
+__pycache__/
+
+# Ignorowanie plików w folderze ignore
+ignore/*
