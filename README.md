@@ -91,6 +91,3 @@ Git configuration file specifying which files and directories should be ignored 
 ### Required Tools
 - **Python Version:** 3.10.13
 - **Jupyter Notebook**
-
-### Required Libraries
-Install the required libraries using `pip`:
