@@ -95,11 +95,19 @@ def run_crawler():
         # Get all the links from the pages
         all_links = get_all_links(max_pages)
 
-        #Generating filname with curent date and time
-        #todo: add this file version to dictionary data/links
+        # Generating filename with current date and time
         filename = f'Morizon_links:{datetime.now().strftime("%d%m%Y__%H_%M")}'
-        # Save all the links to a CSV file
-        with open(f'data/links/{filename}.csv', "w", newline="", encoding="utf-8") as csv_file:
+        
+        # Get absolute path for the data directory
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        data_path = os.path.join(current_dir, 'data', 'links')
+        
+        # Create directories if they don't exist
+        os.makedirs(data_path, exist_ok=True)
+        
+        # Save all the links to a CSV file using absolute path
+        file_path = os.path.join(data_path, f'{filename}.csv')
+        with open(file_path, "w", newline="", encoding="utf-8") as csv_file:
             writer = csv.writer(csv_file)
             writer.writerow(["Links"])
             writer.writerows([[link] for link in all_links])
